@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Instructor } from '../entities';
+import { Course, Instructor, User } from '../entities';
 import { Repository } from 'typeorm';
 import { CreateInstructorDto } from '../dtos/create-instructor.dto';
+import { UpdateCourseDto } from '../dtos';
+import { UpdateInstructorDto } from '../dtos/update-instructor.dto';
 
 @Injectable()
 export class InstructorService {
@@ -13,22 +15,42 @@ export class InstructorService {
   }
 
   create(inputs: CreateInstructorDto) {
-    return 'This action adds a new course';
+    const newInstructor = new Instructor();
+    newInstructor.name = inputs.name;
+    newInstructor.surname = inputs.surname;
+    newInstructor.title = inputs.title;
+    newInstructor.avatar = inputs.avatar;
+    newInstructor.bio = inputs.bio;
+
+    return this.instructorRepo.save(newInstructor).then((entity) => this.getWhere('id', entity.id))
+      .catch((error) => Promise.reject(error));
   }
 
   findAll() {
     return `This action returns all course`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async get(instructorId: number): Promise<Instructor> {
+    const foundInstructor = await this.getWhere('id', instructorId);
+    if (!foundInstructor) {
+      throw new NotFoundException(`Instructor not fount with id #${instructorId}`);
+    }
+    return foundInstructor;
   }
 
-  // update(id: number, updateCourseDto: UpdateCourseDto) {
-  //   return `This action updates a #${id} course`;
-  // }
+  async update(instructorId: number, inputs: UpdateInstructorDto) {
+    const foundInstructor = await this.get(instructorId);
+    await this.instructorRepo.update(foundInstructor.id, inputs);
+    return await this.get(instructorId);
+  }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  async remove(instructorId: number) {
+    const foundInstructor = await this.get(instructorId);
+    await this.instructorRepo.softDelete(foundInstructor.id);
+    return { deleted: true };
+  }
+
+  async getWhere(key: string, value: any, relations: string[] = []): Promise<Instructor | null> {
+    return this.instructorRepo.findOne({ where: { [key]: value }, relations });
   }
 }

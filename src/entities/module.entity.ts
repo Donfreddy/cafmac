@@ -1,21 +1,10 @@
 import { BaseEntity } from './base.entity';
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
-import { Exclude, Expose } from 'class-transformer';
 
-@Entity('users')
-export class User extends BaseEntity {
-  @Column()
-  first_name: string;
-
-  @Column()
-  last_name: string;
-
-  @Column({ unique: true })
-  email: string;
-
-  @Exclude()
-  @Column()
-  password?: string;
+@Entity('modules')
+export class Module extends BaseEntity {
+  @Column({ type: 'text' })
+  name: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

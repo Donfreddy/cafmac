@@ -3,14 +3,14 @@
 set -e
 
 SERVER="cafmac_server";
-PW="mysecretpassword";
+PW="Secret548UOLPassword";
 DB="cafmac_db";
 
 echo "echo stop & remove old docker [$SERVER] and starting new fresh instance of [$SERVER]"
 (docker kill $SERVER || :) && \
   (docker rm $SERVER || :) && \
   docker run --name $SERVER -e POSTGRES_PASSWORD=$PW \
-  -e PGPASSWORD=$PW \
+  -e PG_PASSWORD=$PW \
   -p 5432:5432 \
   -d postgres
 

@@ -1,5 +1,5 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Blog } from './blog.entity';
 
 @Entity('comments')
@@ -19,4 +19,7 @@ export class Comment extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleted_at: Date;
 }

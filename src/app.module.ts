@@ -6,7 +6,7 @@ import { AuthModule, BlogModule, UserModule } from './modules';
 import { LogsMiddleware } from './common/middlewares';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformationInterceptor } from './common/interceptors';
-import { CourseModule } from './modules/course.module';
+import { CourseModule } from './modules';
 
 @Module({
   imports: [

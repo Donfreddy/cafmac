@@ -1,5 +1,14 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Comment } from './comment.entity';
 
@@ -39,4 +48,7 @@ export class Blog extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleted_at: Date;
 }

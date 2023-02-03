@@ -1,5 +1,5 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Course } from './course.entity';
 
 @Entity('reviews')
@@ -11,7 +11,7 @@ export class Review extends BaseEntity {
   author: string;
 
   @Column({ default: '0.0' })
-  vote: string;
+  rating: string;
 
   @ManyToOne(() => Course, course => course.reviews)
   @JoinColumn()
@@ -22,4 +22,7 @@ export class Review extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleted_at: Date;
 }

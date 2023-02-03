@@ -1,5 +1,5 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 
 @Entity('trainings')
 export class Training extends BaseEntity {
@@ -11,4 +11,7 @@ export class Training extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleted_at: Date;
 }

@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateInstructorDto {
+export class UpdateInstructorDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ type: 'string', example: 'Mike', required: true })
@@ -21,10 +21,4 @@ export class CreateInstructorDto {
   @IsNotEmpty()
   @ApiProperty({ type: 'string', example: '', required: false })
   avatar: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  @ApiProperty({ type: 'string', example: 'Instructor biographic', required: true })
-  bio: string;
 }

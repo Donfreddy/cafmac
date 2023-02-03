@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  OneToMany,
+  OneToMany, DeleteDateColumn,
 } from 'typeorm';
 import { Training } from './training.entity';
 import { Instructor } from './instructor.entity';
@@ -36,8 +36,8 @@ export class Course extends BaseEntity {
   @Column()
   duration: number;
 
-  @Column({ default: '0.0' })
-  total_votes: string;
+  @Column({ type: 'float', default: 0 })
+  vote_average: number;
 
   @Column({ default: 0 })
   number_of_graduate: number;
@@ -65,4 +65,7 @@ export class Course extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deleted_at: Date;
 }
