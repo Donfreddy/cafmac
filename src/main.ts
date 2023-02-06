@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from './common/pipes';
 import { HttpExceptionFilter } from './common/errors';
+import { configService } from './config/config.service';
 
 
 async function bootstrap() {
@@ -25,7 +26,9 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(3000);
+  await app.listen(configService.getPort() ?? 3000, () => {
+    console.log(app.getUrl());
+  });
 }
 
 void bootstrap();
