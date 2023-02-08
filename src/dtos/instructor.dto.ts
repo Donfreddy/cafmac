@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateInstructorDto {
   @IsString()
@@ -17,6 +17,11 @@ export class CreateInstructorDto {
   @ApiProperty({ type: 'string', example: 'Ingénieur en maintenance', required: true })
   title: string;
 
+  @IsOptional()
+  @IsNotEmpty()
+  @ApiProperty({ type: 'string', example: '', required: false })
+  telephone: string;
+
   @IsUrl()
   @IsNotEmpty()
   @ApiProperty({ type: 'string', example: '', required: false })
@@ -28,3 +33,5 @@ export class CreateInstructorDto {
   @ApiProperty({ type: 'string', example: 'Instructor biographic', required: true })
   bio: string;
 }
+
+export class UpdateInstructorDto  extends PartialType(CreateInstructorDto) {}

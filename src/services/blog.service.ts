@@ -1,20 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as _ from 'lodash';
-import { Blog, Comment, User } from '../entities';
-import { CreateBlogDto, UpdateBlogDto, UpdateCourseDto } from '../dtos';
+import { Blog, User } from '../entities';
+import { CreateBlogDto, UpdateBlogDto, UpdateCommentDto, CreateCommentDto } from '../dtos';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { SlugProvider } from '../providers/slug.provider';
-import { CreateCommentDto } from '../dtos/create-comment.dto';
+import { CommentService } from './comment.service';
 
 @Injectable()
 export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private readonly blogRepo: Repository<Blog>,
-    @InjectRepository(Comment)
-    private readonly commentRepo: Repository<Comment>,
+    private readonly comment: CommentService,
     private readonly slug: SlugProvider,
   ) {
   }
@@ -58,14 +56,17 @@ export class BlogService {
 
   async postComment(blogSlug: string, inputs: CreateCommentDto) {
     const foundBlog = await this.get(blogSlug);
+    return this.comment.create(foundBlog, inputs);
+  }
 
-    const newComment = new Comment();
-    newComment.content = inputs.content;
-    newComment.author = inputs.author;
-    newComment.blog = foundBlog;
-    await this.commentRepo.save(newComment);
+  async editComment(blogSlug: string, commentId: number, inputs: UpdateCommentDto) {
+    await this.get(blogSlug);
+    return this.comment.update(commentId, inputs);
+  }
 
-    return { comment: _.pick(newComment, ['id', 'content', 'author']) };
+  async deleteComment(blogSlug: string, commentId: number) {
+    await this.get(blogSlug);
+    return this.comment.remove(commentId);
   }
 
   async getWhere(key: string, value: any, relations: string[] = []): Promise<Blog | null> {

@@ -1,18 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { CourseService } from '../services';
-import { CreateCourseDto } from '../dtos';
-import { UpdateCourseDto } from '../dtos';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Put,
+} from '@nestjs/common';
 import {
   ApiBearerAuth, ApiBody,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
-  ApiOperation,
+  ApiInternalServerErrorResponse, ApiOkResponse,
+  ApiOperation, ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResponseMessage } from '../common/decorators';
-import { ErrorResponseDto, SuccessResponseDto } from '../dtos';
-import { CreateInstructorDto } from '../dtos/create-instructor.dto';
+import { CreateInstructorDto, ErrorResponseDto, SuccessResponseDto, UpdateInstructorDto } from '../dtos';
 import { InstructorService } from '../services/instructor.service';
 
 @ApiTags('instructors')
@@ -35,22 +42,50 @@ export class InstructorController {
   }
 
   @Get()
-  findAll() {
-    // return this.courseService.findAll();
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Get all instructor successfully.')
+  @ApiOperation({ summary: 'Get all instructors.' })
+  @ApiOkResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  getAllModule() {
+    return this.instructor.getAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    //  return this.courseService.findOne(+id);
+  @Get(':slug')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Get one instructor successfully.')
+  @ApiOperation({ summary: 'Get one instructor.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Instructor slug', example: 'instructor-title-mfatf1v6f' })
+  getBlog(@Param('slug') instructorSlug: string) {
+    return this.instructor.get(instructorSlug);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    // return this.courseService.update(+id, updateCourseDto);
+  @Put(':slug')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Instructor updated successfully.')
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiOperation({ summary: 'Update instructor.' })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiBody({ description: 'Update instructor', type: UpdateInstructorDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Instructor slug', example: 'instructor-title-mfatf1v6f' })
+  update(@Param('slug') instructorSlug: string, @Body() inputs: UpdateInstructorDto) {
+    return this.instructor.update(instructorSlug, inputs);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    //  return this.courseService.remove(+id);
+  @Delete(':slug')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Instructor deleted successfully.')
+  @ApiOperation({ summary: 'Delete instructor.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Instructor slug', example: 'instructor-title-mfatf1v6f' })
+  remove(@Param('slug') moduleSlug: string) {
+    return this.instructor.remove(moduleSlug);
   }
 }

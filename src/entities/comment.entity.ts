@@ -7,8 +7,11 @@ export class Comment extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ nullable: true })
+  @Column()
   author: string;
+
+  @Column({ nullable: true })
+  email: string;
 
   @ManyToOne(() => Blog, blog => blog.comments)
   @JoinColumn()

@@ -1,32 +1,43 @@
 import { Module } from '@nestjs/common';
 import { CourseService } from '../services';
-import { CourseController } from '../controllers';
-import { InstructorController } from '../controllers/instructor.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Course, Instructor, Training } from '../entities';
+import { AppDomain, Course, Instructor, Training } from '../entities';
+import {
+  AppDomainController,
+  CourseController,
+  InstructorController,
+  TrainingController,
+  ModuleController,
+} from '../controllers';
 import { SlugProvider } from '../providers/slug.provider';
 import { InstructorService } from '../services/instructor.service';
 import { Review } from '../entities/review.entity';
-import { TrainingController } from '../controllers/training.controller';
-import { ModuleController } from '../controllers/module.controller';
 import { ModuleService } from '../services/module.service';
 import { TrainingService } from '../services/Training.service';
 import { Module as M } from '../entities/module.entity';
+import { AppDomainService } from '../services/app-domain.service';
+import { ReviewController } from '../controllers/review.controller';
+import { ReviewService } from '../services/review.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Instructor, Review, Training, M])],
+  imports: [TypeOrmModule.forFeature([Course, Instructor, Review, Training, M, AppDomain])],
   controllers: [
     CourseController,
     InstructorController,
     TrainingController,
     ModuleController,
+    AppDomainController,
+    ReviewController,
   ],
   providers: [
     CourseService,
     InstructorService,
     ModuleService,
     TrainingService,
-    SlugProvider],
+    AppDomainService,
+    ReviewService,
+    SlugProvider,
+  ],
 })
 export class CourseModule {
 }

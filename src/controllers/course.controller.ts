@@ -3,17 +3,22 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
   HttpCode,
   HttpStatus,
-  Put,
+  Put, ParseIntPipe,
 } from '@nestjs/common';
 import { CourseService } from '../services';
-import { CreateCourseDto, UpdateBlogDto } from '../dtos';
-import { UpdateCourseDto } from '../dtos';
+import {
+  CreateCommentDto,
+  CreateCourseDto,
+  CreateReviewDto,
+  UpdateBlogDto,
+  UpdateCourseDto,
+  UpdateReviewDto,
+} from '../dtos';
 import {
   ApiBearerAuth, ApiBody,
   ApiCreatedResponse,
@@ -24,8 +29,6 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResponseMessage } from '../common/decorators';
 import { ErrorResponseDto, SuccessResponseDto } from '../dtos';
-import { CreateCommentDto } from '../dtos/create-comment.dto';
-import { CreateReviewDto } from '../dtos/create-review.dto';
 
 @ApiTags('courses')
 @Controller('courses')
@@ -69,8 +72,9 @@ export class CourseController {
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   @ApiParam({ name: 'slug', type: String, description: 'Course slug', example: 'course-title-mfatf1v6f' })
   getBlog(@Param('slug') blogSlug: string) {
-    return this.course.get(blogSlug);
+    return this.course.getOne(blogSlug);
   }
+
   @Put(':slug')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -79,10 +83,11 @@ export class CourseController {
   @ApiCreatedResponse({ type: SuccessResponseDto })
   @ApiOperation({ summary: 'Update course.' })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
-  @ApiBody({ description: 'Update course', type: UpdateBlogDto })
+  @ApiBody({ description: 'Update course', type: UpdateCourseDto })
+
   @ApiParam({ name: 'slug', type: String, description: 'Course slug', example: 'course-title-mfatf1v6f' })
-  update(@Param('slug') blogSlug: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.course.update(blogSlug, updateBlogDto);
+  update(@Param('slug') blogSlug: string, @Body() inputs: UpdateCourseDto) {
+    return this.course.update(blogSlug, inputs);
   }
 
   @Delete(':slug')
@@ -110,5 +115,34 @@ export class CourseController {
   @ApiParam({ name: 'slug', type: String, description: 'Course slug', example: 'course-title-mfatf1v6f' })
   postComment(@Param('slug') blogSlug: string, @Body() inputs: CreateReviewDto) {
     return this.course.postReview(blogSlug, inputs);
+  }
+
+
+  @Put(':slug/reviews/:id')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Comment updated successfully.')
+  @ApiOperation({ summary: 'Update comment.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiBody({ description: 'Update review', type: CreateCommentDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Course slug', example: 'course-title-mfatf1v6f' })
+  @ApiParam({ name: 'id', description: 'Review ID', example: 32 })
+  editComment(
+    @Param('slug') couseSlug: string,
+    @Param('id', ParseIntPipe) reviewId: number,
+    @Body() inputs: UpdateReviewDto,
+  ) {
+   //  return this.course.(blogSlug, commentId, inputs);
+  }
+
+  @Delete(':slug/reviews/:id')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Review deleted successfully.')
+  @ApiOperation({ summary: 'Delete review.' })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', description: 'Blog slug', example: 'course-title-mfatf1v6f' })
+  @ApiParam({ name: 'id', description: 'Review ID', example: 32 })
+  deleteComment(@Param('slug') courseSlug: string, @Param('id', ParseIntPipe) reviewId: number) {
+    // return this.blog.deleteComment(blogSlug, commentId);
   }
 }

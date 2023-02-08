@@ -7,6 +7,8 @@ import { configService } from './config/config.service';
 
 
 async function bootstrap() {
+  const url = configService.isProduction() ? 'https' : 'http'
+
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
@@ -18,6 +20,7 @@ async function bootstrap() {
     .setDescription('Api documentation for CAFMAC')
     .setVersion('1.0.0')
     .addBearerAuth()
+    // .addServer(`${url}://`)
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
@@ -26,9 +29,7 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(configService.getPort() ?? 3000, () => {
-    console.log(app.getUrl());
-  });
+  await app.listen(configService.getPort() ?? 3000);
 }
 
 void bootstrap();

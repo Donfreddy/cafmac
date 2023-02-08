@@ -5,13 +5,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
+  Param, ParseIntPipe,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { CreateBlogDto } from '../dtos';
-import { UpdateBlogDto } from '../dtos';
 import { BlogService } from '../services';
 import { GetUser, ResponseMessage } from '../common/decorators';
 import {
@@ -22,10 +20,9 @@ import {
   ApiOperation, ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { ErrorResponseDto, SuccessResponseDto } from '../dtos';
+import { CreateBlogDto, CreateCommentDto, ErrorResponseDto, SuccessResponseDto, UpdateBlogDto } from '../dtos';
 import { User } from '../entities';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CreateCommentDto } from '../dtos/create-comment.dto';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -103,29 +100,42 @@ export class BlogController {
   }
 
   @Post(':slug/comments')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Blog commented successfully.')
-  @ApiOperation({ summary: 'Comment blog.' })
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Comment created successfully.')
+  @ApiOperation({ summary: 'Post comment.' })
   @ApiCreatedResponse({ type: SuccessResponseDto })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
-  @ApiBody({ description: 'Comment a blog', type: CreateCommentDto })
+  @ApiBody({ description: 'Post comment', type: CreateCommentDto })
   @ApiParam({ name: 'slug', type: String, description: 'Blog slug', example: 'blog-title-mfatf1v6f' })
   postComment(@Param('slug') blogSlug: string, @Body() inputs: CreateCommentDto) {
     return this.blog.postComment(blogSlug, inputs);
   }
 
-  // @Get(':slug/comments')
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard)
-  // @HttpCode(HttpStatus.OK)
-  // @ResponseMessage('Blog deleted successfully.')
-  // @ApiOperation({ summary: 'Delete blog.' })
-  // @ApiCreatedResponse({ type: SuccessResponseDto })
-  // @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
-  // @ApiParam({ name: 'slug', type: String, description: 'Blog slug', example: 'blog-title-mfatf1v6f' })
-  // remove2(@Param('slug') blogSlug: string) {
-  //   return this.blog.remove(blogSlug);
-  // }
+  @Put(':slug/comments/:id')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Comment updated successfully.')
+  @ApiOperation({ summary: 'Update comment.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiBody({ description: 'Update comment', type: CreateCommentDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Blog slug', example: 'blog-title-mfatf1v6f' })
+  @ApiParam({ name: 'id', description: 'Comment ID', example: 32 })
+  editComment(
+    @Param('slug') blogSlug: string,
+    @Param('id', ParseIntPipe) commentId: number,
+    @Body() inputs: CreateCommentDto,
+  ) {
+    return this.blog.editComment(blogSlug, commentId, inputs);
+  }
+
+  @Delete(':slug/comments/:id')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Comment deleted successfully.')
+  @ApiOperation({ summary: 'Delete comment.' })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', description: 'Blog slug', example: 'blog-title-mfatf1v6f' })
+  @ApiParam({ name: 'id', description: 'Comment ID', example: 32 })
+  deleteComment(@Param('slug') blogSlug: string, @Param('id', ParseIntPipe) commentId: number) {
+    return this.blog.deleteComment(blogSlug, commentId);
+  }
 }

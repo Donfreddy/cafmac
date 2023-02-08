@@ -1,51 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Course, Instructor, User } from '../entities';
+import { Instructor } from '../entities';
 import { Repository } from 'typeorm';
-import { CreateInstructorDto } from '../dtos/create-instructor.dto';
-import { UpdateCourseDto } from '../dtos';
-import { UpdateInstructorDto } from '../dtos/update-instructor.dto';
+import { SlugProvider } from '../providers/slug.provider';
+import { CreateInstructorDto, UpdateInstructorDto } from '../dtos';
 
 @Injectable()
 export class InstructorService {
   constructor(
     @InjectRepository(Instructor)
     private readonly instructorRepo: Repository<Instructor>,
+    private readonly slug: SlugProvider,
   ) {
   }
 
   create(inputs: CreateInstructorDto) {
     const newInstructor = new Instructor();
     newInstructor.name = inputs.name;
+    newInstructor.slug = this.slug.slugify(inputs.name + inputs.surname);
     newInstructor.surname = inputs.surname;
     newInstructor.title = inputs.title;
+    newInstructor.telephone = inputs.telephone;
     newInstructor.avatar = inputs.avatar;
     newInstructor.bio = inputs.bio;
 
-    return this.instructorRepo.save(newInstructor).then((entity) => this.getWhere('id', entity.id))
+    return this.instructorRepo.save(newInstructor).then((entity) => this.getWhere('slug', entity.slug))
       .catch((error) => Promise.reject(error));
   }
 
-  findAll() {
-    return `This action returns all course`;
+  getAll() {
+    return this.instructorRepo.find();
   }
 
-  async get(instructorId: number): Promise<Instructor> {
-    const foundInstructor = await this.getWhere('id', instructorId);
+  async get(instructorSlug: string): Promise<Instructor> {
+    const foundInstructor = await this.getWhere('slug', instructorSlug);
     if (!foundInstructor) {
-      throw new NotFoundException(`Instructor not fount with id #${instructorId}`);
+      throw new NotFoundException(`Instructor not fount with slug ${instructorSlug}`);
     }
     return foundInstructor;
   }
 
-  async update(instructorId: number, inputs: UpdateInstructorDto) {
-    const foundInstructor = await this.get(instructorId);
+  async update(instructorSlug: string, inputs: UpdateInstructorDto) {
+    const foundInstructor = await this.get(instructorSlug);
     await this.instructorRepo.update(foundInstructor.id, inputs);
-    return await this.get(instructorId);
+    return await this.get(instructorSlug);
   }
 
-  async remove(instructorId: number) {
-    const foundInstructor = await this.get(instructorId);
+  async remove(instructorSlug: string) {
+    const foundInstructor = await this.get(instructorSlug);
     await this.instructorRepo.softDelete(foundInstructor.id);
     return { deleted: true };
   }

@@ -27,7 +27,10 @@ export class Blog extends BaseEntity {
   tags: string[];
 
   @Column({ default: false })
-  published: boolean;
+  is_published: boolean;
+
+  @Column({ default: true })
+  is_draft: boolean;
 
   @Column({ nullable: true })
   category: string;

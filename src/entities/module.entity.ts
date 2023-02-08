@@ -1,10 +1,30 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { AppDomain } from './app-domain.entity';
+import { Course } from './course.entity';
 
 @Entity('modules')
 export class Module extends BaseEntity {
   @Column({ type: 'text' })
-  name: string;
+  title: string;
+
+  @Column({ unique: true })
+  slug: string;
+
+  @ManyToOne(() => Course)
+  @JoinColumn()
+  course: Course;
+
+  @Column({ type: 'simple-array' })
+  AppDomain: string[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

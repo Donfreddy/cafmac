@@ -1,28 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCourseDto, UpdateCourseDto } from '../dtos';
+import { CreateCourseDto, CreateReviewDto, UpdateCourseDto } from '../dtos';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course, Instructor } from '../entities';
 import { Repository } from 'typeorm';
 import { SlugProvider } from '../providers/slug.provider';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { CreateReviewDto } from '../dtos/create-review.dto';
 import * as _ from 'lodash';
 import { Review } from '../entities/review.entity';
+import { ReviewService } from './review.service';
+import { TrainingService } from './Training.service';
+import { InstructorService } from './instructor.service';
+import { Module } from '../entities/module.entity';
 
 @Injectable()
 export class CourseService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepo: Repository<Course>,
-    @InjectRepository(Instructor)
-    private readonly instructorRepo: Repository<Instructor>,
+    @InjectRepository(Module)
+    private readonly moduleRepo: Repository<Module>,
     @InjectRepository(Review)
     private readonly reviewRepo: Repository<Review>,
+    private readonly review: ReviewService,
+    private readonly training: TrainingService,
+    private readonly instructor: InstructorService,
     private readonly slug: SlugProvider,
   ) {
   }
 
   async create(inputs: CreateCourseDto) {
+    const instructorsList: Instructor[] = [];
+    const fountTraining = await this.training.get(inputs.training_slug);
+
+    await Promise.all(inputs.instructors.map(async (id) => {
+      const foundInstructor = await this.instructor.getWhere('id', id);
+      if (!foundInstructor) {
+        throw new NotFoundException(`Instructor not fount with id #${id}`);
+      }
+      instructorsList.push(foundInstructor);
+    }));
+
     const newCourse = new Course();
     newCourse.title = inputs.title;
     newCourse.slug = this.slug.slugify(inputs.title);
@@ -31,6 +48,9 @@ export class CourseService {
     newCourse.prerequisites = inputs.prerequisites;
     newCourse.kpi = inputs.kpi;
     newCourse.objectives = inputs.objectives;
+    newCourse.training = fountTraining;
+    newCourse.instructors = instructorsList;
+    newCourse.graduates = inputs.graduates;
 
     return this.courseRepo.save(newCourse).then((entity) => this.getWhere('id', entity.id))
       .catch((error) => Promise.reject(error));
@@ -48,9 +68,40 @@ export class CourseService {
     return foundCourse;
   }
 
+
+  async getOne(courseSlug: string): Promise<Course> {
+    const foundCourse = await this.get(courseSlug);
+
+    const foundModule = await this.moduleRepo.find({
+      where: { course: { slug: foundCourse.slug } },
+    });
+
+    return { ...foundCourse, ...foundModule };
+  }
+
   async update(blogSlug: string, inputs: UpdateCourseDto) {
     const foundCourse = await this.get(blogSlug);
-    await this.courseRepo.update(foundCourse.id, inputs);
+    const instructors: Instructor[] = [];
+    const fountTraining = await this.training.get(inputs.training_slug);
+
+    await Promise.all(inputs.instructors.map(async (id) => {
+      const foundInstructor = await this.instructor.getWhere('id', id);
+      if (!foundInstructor) {
+        throw new NotFoundException(`Instructor not fount with id #${id}`);
+      }
+      instructors.push(foundInstructor);
+    }));
+
+    if (inputs.title) foundCourse.title = inputs.title;
+    if (inputs.description) foundCourse.description = inputs.description;
+    if (inputs.description) foundCourse.duration = inputs.duration;
+    if (inputs.prerequisites) foundCourse.prerequisites = inputs.prerequisites;
+    if (inputs.kpi) foundCourse.kpi = inputs.kpi;
+    if (inputs.objectives) foundCourse.objectives = inputs.objectives;
+    if (inputs.training_slug) foundCourse.training = fountTraining;
+    if (inputs.instructors) foundCourse.instructors = instructors;
+    if (inputs.graduates) foundCourse.graduates = inputs.graduates;
+    await this.courseRepo.update(module.id, foundCourse);
     return await this.get(blogSlug);
   }
 
@@ -63,12 +114,7 @@ export class CourseService {
   async postReview(blogSlug: string, inputs: CreateReviewDto) {
     const foundCourse = await this.get(blogSlug);
 
-    const newReview = new Review();
-    newReview.content = inputs.content;
-    newReview.author = inputs.author;
-    newReview.rating = inputs.rating;
-    newReview.course = foundCourse;
-    await this.reviewRepo.save(newReview);
+    const createReview = await this.review.create(foundCourse, inputs);
 
     // get all rating from course
     const reviews = await this.get(blogSlug).then((c) => {
@@ -83,10 +129,9 @@ export class CourseService {
 
     // update vote average
     foundCourse.vote_average = totalReviews / reviews.length;
-    console.log(foundCourse);
     await this.courseRepo.save(foundCourse);
 
-    return { review: _.pick(newReview, ['id', 'content', 'author', 'rating']) };
+    return { review: _.pick(createReview, ['id', 'content', 'author', 'rating']) };
   }
 
   async getWhere(key: string, value: any, relations: string[] = []): Promise<Course | null> {

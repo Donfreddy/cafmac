@@ -1,17 +1,26 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth, ApiBody,
   ApiCreatedResponse,
-  ApiInternalServerErrorResponse,
-  ApiOperation,
+  ApiInternalServerErrorResponse, ApiOkResponse,
+  ApiOperation, ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResponseMessage } from '../common/decorators';
-import { ErrorResponseDto, SuccessResponseDto, UpdateCourseDto } from '../dtos';
-import { CreateInstructorDto } from '../dtos/create-instructor.dto';
+import { ErrorResponseDto, SuccessResponseDto, CreateModuleDto, UpdateModuleDto } from '../dtos';
 import { ModuleService } from '../services/module.service';
-import { CreateModuleDto } from '../dtos/create-module.dto';
 
 @ApiTags('modules')
 @Controller('modules')
@@ -33,22 +42,50 @@ export class ModuleController {
   }
 
   @Get()
-  findAll() {
-    // return this.courseService.findAll();
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Get all modules successfully.')
+  @ApiOperation({ summary: 'Get all module.' })
+  @ApiOkResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  getAllModule() {
+    return this.module.getAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    //  return this.courseService.findOne(+id);
+  @Get(':slug')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Get one module successfully.')
+  @ApiOperation({ summary: 'Get one module.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Module slug', example: 'module-title-mfatf1v6f' })
+  getBlog(@Param('slug') moduleSlug: string) {
+    return this.module.get(moduleSlug);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    // return this.courseService.update(+id, updateCourseDto);
+  @Put(':slug')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Module updated successfully.')
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiOperation({ summary: 'Update module.' })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiBody({ description: 'Update module', type: UpdateModuleDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Module slug', example: 'module-title-mfatf1v6f' })
+  update(@Param('slug') moduleSlug: string, @Body() inputs: UpdateModuleDto) {
+    return this.module.update(moduleSlug, inputs);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    //  return this.courseService.remove(+id);
+  @Delete(':slug')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Module deleted successfully.')
+  @ApiOperation({ summary: 'Delete module.' })
+  @ApiCreatedResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  @ApiParam({ name: 'slug', type: String, description: 'Module slug', example: 'module-title-mfatf1v6f' })
+  remove(@Param('slug') moduleSlug: string) {
+    return this.module.remove(moduleSlug);
   }
 }

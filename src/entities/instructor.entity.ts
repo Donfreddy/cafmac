@@ -7,6 +7,9 @@ export class Instructor extends BaseEntity {
   @Column()
   name: string;
 
+  @Column({ unique: true })
+  slug: string;
+
   @Column()
   surname: string;
 
@@ -18,6 +21,9 @@ export class Instructor extends BaseEntity {
 
   @Column({ nullable: true })
   bio: string;
+
+  @Column({ nullable: true })
+  telephone: string;
 
   @ManyToMany(() => Course, course => course.instructors)
   @JoinColumn()

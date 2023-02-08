@@ -1,5 +1,5 @@
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateCourseDto {
   @IsString()
@@ -49,6 +49,28 @@ export class CreateCourseDto {
 
   @IsNumber()
   @IsNotEmpty()
+  @ApiProperty({ type: 'number', example: 38, required: false })
+  graduates: number;
+
+  @IsNumber()
+  @IsNotEmpty()
   @ApiProperty({ type: 'number', example: 8, required: true })
   duration: number;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'An array of instructors IDs',
+    example: [1, 2, 3],
+    required: true,
+  })
+  instructors: number[];
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ description: 'Training slug', example: 'title-j3nklqw', required: true })
+  training_slug: string;
 }
+
+export class UpdateCourseDto extends PartialType(CreateCourseDto) {}
+

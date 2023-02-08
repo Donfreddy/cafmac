@@ -40,13 +40,13 @@ export class Course extends BaseEntity {
   vote_average: number;
 
   @Column({ default: 0 })
-  number_of_graduate: number;
+  graduates: number;
 
-  @Column({ type: 'simple-array', nullable: true })
-  application_domains: string[];
+  @Column({ default: 0 })
+  registered: number;
 
-  @Column({ type: 'simple-array', nullable: true })
-  modules: string[];
+  @Column({ default: 0 })
+  module_count: number;
 
   @ManyToOne(() => Training)
   @JoinColumn()

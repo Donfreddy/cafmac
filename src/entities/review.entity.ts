@@ -7,8 +7,11 @@ export class Review extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ nullable: true })
+  @Column()
   author: string;
+
+  @Column({ nullable: true })
+  email: string;
 
   @Column({ default: '0.0' })
   rating: string;
