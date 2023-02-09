@@ -4,32 +4,38 @@ import { Instructor } from '../entities';
 import { Repository } from 'typeorm';
 import { SlugProvider } from '../providers/slug.provider';
 import { CreateInstructorDto, UpdateInstructorDto } from '../dtos';
-import { slugOrIdWhereCondition } from '../common/helpers';
+import { getImageUrl, slugOrIdWhereCondition } from '../common/helpers';
+import { LocalFileDto } from '../dtos/local-file.dto';
+import { LocalFileService } from './local-file.service';
 
 @Injectable()
 export class InstructorService {
   constructor(
     @InjectRepository(Instructor)
     private readonly instructorRepo: Repository<Instructor>,
+    private localFile: LocalFileService,
     private readonly slug: SlugProvider,
   ) {
   }
 
-  create(inputs: CreateInstructorDto) {
+  async create(inputs: CreateInstructorDto, fileData: LocalFileDto) {
+    // save file
+    await this.localFile.saveLocalFileData(fileData);
+
     const newInstructor = new Instructor();
     newInstructor.name = inputs.name;
     newInstructor.slug = this.slug.slugify(inputs.name + inputs.surname);
     newInstructor.surname = inputs.surname;
     newInstructor.title = inputs.title;
     newInstructor.telephone = inputs.telephone;
-    newInstructor.avatar = inputs.avatar;
+    newInstructor.avatar = getImageUrl(fileData.filename);
     newInstructor.bio = inputs.bio;
 
-    return this.instructorRepo.save(newInstructor).then((entity) => this.getWhere('slug', entity.slug))
+    return this.instructorRepo.save(newInstructor).then((entity) => this.getWhere('id', entity.id))
       .catch((error) => Promise.reject(error));
   }
 
-  getAll() {
+  getAll(): Promise<Instructor[]> {
     return this.instructorRepo.find();
   }
 
@@ -45,7 +51,7 @@ export class InstructorService {
 
   async update(instructorSlug: string, inputs: UpdateInstructorDto) {
     const foundInstructor = await this.get(instructorSlug);
-    await this.instructorRepo.update(foundInstructor.id, inputs);
+    //  await this.instructorRepo.update(foundInstructor.id, inputs);
     return await this.get(instructorSlug);
   }
 

@@ -24,7 +24,7 @@ export class Instructor extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   avatar: string;
 
   @Column({ nullable: true })
@@ -35,7 +35,7 @@ export class Instructor extends BaseEntity {
 
   @ManyToMany(() => Course, course => course.instructors)
   @JoinTable()
-  courses: Course[];ß
+  courses: Course[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

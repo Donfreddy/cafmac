@@ -18,9 +18,11 @@ import { Module as M } from '../entities/module.entity';
 import { AppDomainService } from '../services/app-domain.service';
 import { ReviewController } from '../controllers/review.controller';
 import { ReviewService } from '../services/review.service';
+import { LocalFileService } from '../services/local-file.service';
+import { LocalFile } from '../entities/local-file.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Instructor, Review, Training, M, AppDomain])],
+  imports: [TypeOrmModule.forFeature([Course, Instructor, Review, Training, M, AppDomain, LocalFile])],
   controllers: [
     CourseController,
     InstructorController,
@@ -37,6 +39,7 @@ import { ReviewService } from '../services/review.service';
     AppDomainService,
     ReviewService,
     SlugProvider,
+    LocalFileService,
   ],
 })
 export class CourseModule {

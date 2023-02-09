@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateCourseDto {
@@ -56,6 +56,11 @@ export class CreateCourseDto {
   @IsNotEmpty()
   @ApiProperty({ type: 'number', example: 8, required: true })
   duration: number;
+
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty({ type: 'string', example: 'Course banner', required: false, format: "binary" })
+  banner: Express.Multer.File;
 
   @IsArray()
   @IsNotEmpty()

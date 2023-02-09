@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBlogDto {
@@ -16,6 +16,11 @@ export class CreateBlogDto {
   @IsArray()
   @ApiProperty({ example: ['Economic'], required: false })
   tags: string[];
+
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty({ type: 'string', example: 'Blog image', required: false, format: "binary" })
+  image: Express.Multer.File;
 
   @IsString()
   @IsNotEmpty()

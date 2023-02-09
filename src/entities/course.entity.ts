@@ -51,6 +51,12 @@ export class Course extends BaseEntity {
   @Column({ default: 0 })
   instructor_count: number;
 
+  @Column({ nullable: true })
+  banner: string;
+
+  @Column({ nullable: true })
+  public image_id?: number;
+
   @ManyToOne(() => Training)
   @JoinColumn()
   training: Training;

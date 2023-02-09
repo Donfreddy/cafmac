@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,14 +8,14 @@ import {
   HttpStatus,
   Param, ParseIntPipe,
   Post,
-  Put,
-  UseGuards,
+  Put, UploadedFile,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { BlogService } from '../services';
 import { GetUser, ResponseMessage } from '../common/decorators';
 import {
   ApiBearerAuth,
-  ApiBody,
+  ApiBody, ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse, ApiOkResponse,
   ApiOperation, ApiParam,
@@ -23,6 +24,7 @@ import {
 import { CreateBlogDto, CreateCommentDto, ErrorResponseDto, SuccessResponseDto, UpdateBlogDto } from '../dtos';
 import { User } from '../entities';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import LocalFilesInterceptor from '../common/interceptors/local-files.interceptor';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -39,11 +41,28 @@ export class BlogController {
   @ApiOperation({ summary: 'Create a new blog.' })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   @ApiBody({ description: 'Create a new blog', type: CreateBlogDto })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(LocalFilesInterceptor({
+    fieldName: 'image',
+    path: '/images',
+    fileFilter: (_, file, cb) => {
+      if (!file.mimetype.includes('image')) {
+        return cb(new BadRequestException('Provide a valid image'), false);
+      }
+      cb(null, true);
+    },
+  }))
   createBlog(
     @GetUser() user: User,
     @Body() createBlogDto: CreateBlogDto,
+    @UploadedFile('file') image: Express.Multer.File,
   ) {
-    return this.blog.create(createBlogDto, user);
+    return this.blog.create(createBlogDto, user, {
+      path: image.path,
+      filename: image.filename,
+      destination: image.destination,
+      mimetype: image.mimetype,
+    });
   }
 
   @Get()

@@ -8,10 +8,10 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Put,
+  Put, UseInterceptors, UploadedFile, BadRequestException,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth, ApiBody,
+  ApiBearerAuth, ApiBody, ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse, ApiOkResponse,
   ApiOperation, ApiParam,
@@ -21,6 +21,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResponseMessage } from '../common/decorators';
 import { CreateInstructorDto, ErrorResponseDto, SuccessResponseDto, UpdateInstructorDto } from '../dtos';
 import { InstructorService } from '../services/instructor.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import LocalFilesInterceptor from '../common/interceptors/local-files.interceptor';
 
 @ApiTags('instructors')
 @Controller('instructors')
@@ -37,8 +39,24 @@ export class InstructorController {
   @ApiOperation({ summary: 'Create a new instructor.' })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   @ApiBody({ description: 'Create a new instructor', type: CreateInstructorDto })
-  create(@Body() inputs: CreateInstructorDto) {
-    return this.instructor.create(inputs);
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(LocalFilesInterceptor({
+    fieldName: 'avatar',
+    path: '/avatars',
+    fileFilter: (_, file, cb) => {
+      if (!file.mimetype.includes('image')) {
+        return cb(new BadRequestException('Provide a valid image'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  create(@Body() inputs: CreateInstructorDto, @UploadedFile('file') avatar: Express.Multer.File) {
+    return this.instructor.create(inputs, {
+      path: avatar.path,
+      filename: avatar.filename,
+      destination: avatar.destination,
+      mimetype: avatar.mimetype,
+    });
   }
 
   @Get()

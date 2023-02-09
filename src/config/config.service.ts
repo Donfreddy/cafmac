@@ -25,6 +25,14 @@ class ConfigService {
     return this.getValue('APP_PORT');
   }
 
+  public getAPiUrl() {
+    return this.getValue('API_URL');
+  }
+
+  public getFileDestination() {
+    return this.getValue('UPLOADED_FILES_DESTINATION');
+  }
+
   public getJWT() {
     return {
       secretKey: this.getValue('APP_PORT', false) || 'xxxxxx',

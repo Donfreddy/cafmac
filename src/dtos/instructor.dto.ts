@@ -22,16 +22,16 @@ export class CreateInstructorDto {
   @ApiProperty({ type: 'string', example: '', required: false })
   telephone: string;
 
-  @IsUrl()
-  @IsNotEmpty()
-  @ApiProperty({ type: 'string', example: '', required: false })
-  avatar: string;
-
   @IsString()
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty({ type: 'string', example: 'Instructor biographic', required: true })
   bio: string;
+
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty({ type: 'string', example: 'Instructor avatar', required: false, format: "binary" })
+  avatar: Express.Multer.File;
 }
 
 export class UpdateInstructorDto  extends PartialType(CreateInstructorDto) {}

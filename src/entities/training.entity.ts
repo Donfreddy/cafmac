@@ -12,6 +12,12 @@ export class Training extends BaseEntity {
   @Column({ default: 0 })
   course_count: number;
 
+  @Column({ nullable: true })
+  banner: string;
+
+  @Column({ nullable: true })
+  public banner_id?: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 

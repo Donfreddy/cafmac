@@ -4,21 +4,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTrainingDto, UpdateTrainingDto } from '../dtos';
 import { SlugProvider } from '../providers/slug.provider';
-import { Module } from '../entities/module.entity';
-import { slugOrIdWhereCondition } from '../common/helpers';
+import { getImageUrl, slugOrIdWhereCondition } from '../common/helpers';
+import { LocalFileDto } from '../dtos/local-file.dto';
+import { LocalFileService } from './local-file.service';
 
 @Injectable()
 export class TrainingService {
   constructor(
     @InjectRepository(Training)
     private readonly trainingRepo: Repository<Training>,
+    private localFile: LocalFileService,
     private readonly slug: SlugProvider,
   ) {
   }
 
-  async create(inputs: CreateTrainingDto): Promise<Training> {
+  async create(inputs: CreateTrainingDto, fileData: LocalFileDto): Promise<Training> {
+    // save file
+    await this.localFile.saveLocalFileData(fileData);
+
     const newTraining = new Training();
     newTraining.title = inputs.title;
+    newTraining.banner = getImageUrl(fileData.filename);
     newTraining.slug = this.slug.slugify(inputs.title);
 
     return this.trainingRepo.save(newTraining).then((entity) => this.getWhere('id', (entity as Training).id))
@@ -41,7 +47,7 @@ export class TrainingService {
 
   async update(trainingSlug: string, inputs: UpdateTrainingDto) {
     const module = await this.get(trainingSlug);
-    await this.trainingRepo.update(module.id, inputs);
+    // await this.trainingRepo.update(module.id, inputs);
     return await this.get(trainingSlug);
   }
 

@@ -35,6 +35,9 @@ export class Blog extends BaseEntity {
   @Column({ nullable: true })
   category: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @OneToMany(() => Comment, comment => comment.blog, { eager: true })
   @JoinColumn()
   comments: Comment[];

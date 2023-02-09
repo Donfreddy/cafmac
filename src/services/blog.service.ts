@@ -7,6 +7,8 @@ import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginat
 import { SlugProvider } from '../providers/slug.provider';
 import { CommentService } from './comment.service';
 import { slugOrIdWhereCondition } from '../common/helpers';
+import { LocalFileDto } from '../dtos/local-file.dto';
+import { LocalFileService } from './local-file.service';
 
 @Injectable()
 export class BlogService {
@@ -14,15 +16,20 @@ export class BlogService {
     @InjectRepository(Blog)
     private readonly blogRepo: Repository<Blog>,
     private readonly comment: CommentService,
+    private localFile: LocalFileService,
     private readonly slug: SlugProvider,
   ) {
   }
 
-  async create(inputs: CreateBlogDto, author: User): Promise<Blog> {
+  async create(inputs: CreateBlogDto, author: User,  fileData: LocalFileDto): Promise<Blog> {
+    // save file
+    await this.localFile.saveLocalFileData(fileData);
+
     const newBlog = new Blog();
     newBlog.title = inputs.title;
     newBlog.slug = this.slug.slugify(inputs.title);
     newBlog.content = inputs.content;
+    newBlog.image = inputs.content;
     newBlog.category = inputs.category;
     newBlog.tags = inputs.tags;
     newBlog.author = author;

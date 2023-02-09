@@ -12,6 +12,8 @@ import { TrainingService } from './Training.service';
 import { InstructorService } from './instructor.service';
 import { Module } from '../entities/module.entity';
 import { slugOrIdWhereCondition } from '../common/helpers';
+import { LocalFileDto } from '../dtos/local-file.dto';
+import { LocalFileService } from './local-file.service';
 
 @Injectable()
 export class CourseService {
@@ -27,11 +29,15 @@ export class CourseService {
     private readonly review: ReviewService,
     private readonly training: TrainingService,
     private readonly instructor: InstructorService,
+    private localFile: LocalFileService,
     private readonly slug: SlugProvider,
   ) {
   }
 
-  async create(inputs: CreateCourseDto) {
+  async create(inputs: CreateCourseDto,  fileData: LocalFileDto) {
+    // save file
+    await this.localFile.saveLocalFileData(fileData);
+
     const instructorsList: Instructor[] = [];
     const fountTraining = await this.training.get(inputs.training_slug);
 

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,11 +8,11 @@ import {
   HttpStatus,
   Param,
   Post,
-  Put,
-  UseGuards,
+  Put, UploadedFile,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth, ApiBody,
+  ApiBearerAuth, ApiBody, ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse, ApiOkResponse,
   ApiOperation, ApiParam,
@@ -27,6 +28,7 @@ import {
   UpdateTrainingDto,
 } from '../dtos';
 import { TrainingService } from '../services/Training.service';
+import LocalFilesInterceptor from '../common/interceptors/local-files.interceptor';
 
 @ApiTags('trainings')
 @Controller('trainings')
@@ -43,8 +45,24 @@ export class TrainingController {
   @ApiOperation({ summary: 'Create a new training.' })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   @ApiBody({ description: 'Create a new training', type: CreateTrainingDto })
-  create(@Body() inputs: CreateTrainingDto) {
-    return this.training.create(inputs);
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(LocalFilesInterceptor({
+    fieldName: 'image',
+    path: '/images',
+    fileFilter: (_, file, cb) => {
+      if (!file.mimetype.includes('image')) {
+        return cb(new BadRequestException('Provide a valid image'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  create(@Body() inputs: CreateTrainingDto, @UploadedFile('file') banner: Express.Multer.File) {
+    return this.training.create(inputs, {
+      path: banner.path,
+      filename: banner.filename,
+      destination: banner.destination,
+      mimetype: banner.mimetype,
+    });
   }
 
   @Get()

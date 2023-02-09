@@ -8,19 +8,18 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Put, ParseIntPipe,
+  Put, ParseIntPipe, UseInterceptors, BadRequestException, UploadedFile,
 } from '@nestjs/common';
 import { CourseService } from '../services';
 import {
   CreateCommentDto,
   CreateCourseDto,
   CreateReviewDto,
-  UpdateBlogDto,
   UpdateCourseDto,
   UpdateReviewDto,
 } from '../dtos';
 import {
-  ApiBearerAuth, ApiBody,
+  ApiBearerAuth, ApiBody, ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse, ApiOkResponse,
   ApiOperation, ApiParam,
@@ -29,6 +28,7 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResponseMessage } from '../common/decorators';
 import { ErrorResponseDto, SuccessResponseDto } from '../dtos';
+import LocalFilesInterceptor from '../common/interceptors/local-files.interceptor';
 
 @ApiTags('courses')
 @Controller('courses')
@@ -45,8 +45,24 @@ export class CourseController {
   @ApiOperation({ summary: 'Create a new course.' })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   @ApiBody({ description: 'Create a new course', type: CreateCourseDto })
-  create(@Body() inputs: CreateCourseDto) {
-    return this.course.create(inputs);
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(LocalFilesInterceptor({
+    fieldName: 'banner',
+    path: '/images',
+    fileFilter: (_, file, cb) => {
+      if (!file.mimetype.includes('image')) {
+        return cb(new BadRequestException('Provide a valid image'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  create(@Body() inputs: CreateCourseDto,  @UploadedFile('file') banner: Express.Multer.File) {
+    return this.course.create(inputs, {
+      path: banner.path,
+      filename: banner.filename,
+      destination: banner.destination,
+      mimetype: banner.mimetype,
+    });
   }
 
   @Get()
