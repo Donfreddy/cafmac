@@ -8,7 +8,6 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { AppDomain } from './app-domain.entity';
 import { Course } from './course.entity';
 
 @Entity('modules')
@@ -24,7 +23,7 @@ export class Module extends BaseEntity {
   course: Course;
 
   @Column({ type: 'simple-array' })
-  AppDomain: string[];
+  domains: string[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

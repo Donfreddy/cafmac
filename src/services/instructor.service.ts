@@ -4,6 +4,7 @@ import { Instructor } from '../entities';
 import { Repository } from 'typeorm';
 import { SlugProvider } from '../providers/slug.provider';
 import { CreateInstructorDto, UpdateInstructorDto } from '../dtos';
+import { slugOrIdWhereCondition } from '../common/helpers';
 
 @Injectable()
 export class InstructorService {
@@ -33,7 +34,9 @@ export class InstructorService {
   }
 
   async get(instructorSlug: string): Promise<Instructor> {
-    const foundInstructor = await this.getWhere('slug', instructorSlug);
+    const foundInstructor = await this.instructorRepo.findOne({
+      where: slugOrIdWhereCondition(instructorSlug),
+    });
     if (!foundInstructor) {
       throw new NotFoundException(`Instructor not fount with slug ${instructorSlug}`);
     }

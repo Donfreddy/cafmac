@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppDomain } from '../entities';
-import { CreateAppDomainDto, UpdateAppDomainDto } from '../dtos/app-domain.dto';
+import { CreateAppDomainDto, UpdateAppDomainDto } from '../dtos';
 
 @Injectable()
 export class AppDomainService {

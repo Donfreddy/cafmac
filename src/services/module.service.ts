@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as _ from 'lodash';
 import { CreateModuleDto, UpdateModuleDto } from '../dtos';
 import { Module } from '../entities/module.entity';
 import { AppDomainService } from './app-domain.service';
 import { SlugProvider } from '../providers/slug.provider';
 import { Course } from '../entities';
+import { slugOrIdWhereCondition } from '../common/helpers';
 
 @Injectable()
 export class ModuleService {
@@ -27,7 +29,7 @@ export class ModuleService {
       throw new NotFoundException(`Course not fount with slug ${inputs.course_slug}`);
     }
 
-    await Promise.all(inputs.app_domains.map(async (id) => {
+    await Promise.all(inputs.domains.map(async (id) => {
       const foundAppDomain = await this.appDomain.get(id);
       appDomainList.push(foundAppDomain.name);
     }));
@@ -36,7 +38,7 @@ export class ModuleService {
     newModule.title = inputs.title;
     newModule.slug = this.slug.slugify(inputs.title);
     newModule.course = foundCourse;
-    newModule.AppDomain = appDomainList;
+    newModule.domains = appDomainList;
 
     // update course
     foundCourse.module_count += 1;
@@ -51,7 +53,9 @@ export class ModuleService {
   }
 
   async get(moduleSlug: string): Promise<Module> {
-    const foundModule = await this.getWhere('slug', moduleSlug);
+    const foundModule = await this.moduleRepo.findOne({
+      where: slugOrIdWhereCondition(moduleSlug),
+    });
     if (!foundModule) {
       throw new NotFoundException(`Module not fount with slug ${moduleSlug}`);
     }
@@ -60,7 +64,7 @@ export class ModuleService {
 
   async update(moduleSlug: string, inputs: UpdateModuleDto) {
     const module = await this.get(moduleSlug);
-    await this.moduleRepo.update(module.id, inputs);
+    // await this.moduleRepo.update(module.id, inputs);
     return await this.get(moduleSlug);
   }
 

@@ -11,6 +11,7 @@ import { ReviewService } from './review.service';
 import { TrainingService } from './Training.service';
 import { InstructorService } from './instructor.service';
 import { Module } from '../entities/module.entity';
+import { slugOrIdWhereCondition } from '../common/helpers';
 
 @Injectable()
 export class CourseService {
@@ -19,6 +20,8 @@ export class CourseService {
     private readonly courseRepo: Repository<Course>,
     @InjectRepository(Module)
     private readonly moduleRepo: Repository<Module>,
+    @InjectRepository(Instructor)
+    private readonly instructorRepo: Repository<Instructor>,
     @InjectRepository(Review)
     private readonly reviewRepo: Repository<Review>,
     private readonly review: ReviewService,
@@ -51,17 +54,26 @@ export class CourseService {
     newCourse.training = fountTraining;
     newCourse.instructors = instructorsList;
     newCourse.graduates = inputs.graduates;
+    newCourse.instructor_count = instructorsList.length;
 
     return this.courseRepo.save(newCourse).then((entity) => this.getWhere('id', entity.id))
       .catch((error) => Promise.reject(error));
   }
 
-  getAll(options: IPaginationOptions): Promise<Pagination<Course>> {
-    return paginate<Course>(this.courseRepo, options);
+  getAll(): Promise<any> {
+    return this.courseRepo.find({
+      select: ['id', 'slug', 'description', 'vote_average', 'module_count', 'instructor_count'],
+    });
+    // return paginate<Course>(this.courseRepo, options, {
+    //   select: ['id', 'slug', 'description', 'vote_average', 'module_count', 'instructor_count'],
+    // });
   }
 
-  async get(courseSlug: string): Promise<Course> {
-    const foundCourse = await this.getWhere('slug', courseSlug);
+  async get(courseSlug: string, relations: string[] = []): Promise<Course> {
+    const foundCourse = await this.courseRepo.findOne({
+      where: slugOrIdWhereCondition(courseSlug),
+      relations: relations,
+    });
     if (!foundCourse) {
       throw new NotFoundException(`Course not fount with slug ${courseSlug}`);
     }
@@ -69,14 +81,28 @@ export class CourseService {
   }
 
 
-  async getOne(courseSlug: string): Promise<Course> {
-    const foundCourse = await this.get(courseSlug);
+  async getOne(courseSlug: string): Promise<any> {
+    const foundCourse = await this.courseRepo.findOne({
+      where: slugOrIdWhereCondition(courseSlug),
+      relations: {
+        reviews: true,
+        instructors: true,
+      },
+    });
+    if (!foundCourse) {
+      throw new NotFoundException(`Course not fount with slug ${courseSlug}`);
+    }
 
     const foundModule = await this.moduleRepo.find({
       where: { course: { slug: foundCourse.slug } },
     });
 
-    return { ...foundCourse, ...foundModule };
+    const result: any = {
+      ...foundCourse,
+    };
+    result.modules = foundModule;
+
+    return result;
   }
 
   async update(blogSlug: string, inputs: UpdateCourseDto) {

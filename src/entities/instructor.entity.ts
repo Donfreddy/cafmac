@@ -1,5 +1,13 @@
 import { BaseEntity } from './base.entity';
-import { Entity, Column, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, DeleteDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+  DeleteDateColumn,
+  JoinTable,
+} from 'typeorm';
 import { Course } from './course.entity';
 
 @Entity('instructors')
@@ -26,8 +34,8 @@ export class Instructor extends BaseEntity {
   telephone: string;
 
   @ManyToMany(() => Course, course => course.instructors)
-  @JoinColumn()
-  courses: Course[];
+  @JoinTable()
+  courses: Course[];ß
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

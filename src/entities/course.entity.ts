@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  OneToMany, DeleteDateColumn,
+  OneToMany, DeleteDateColumn, JoinTable,
 } from 'typeorm';
 import { Training } from './training.entity';
 import { Instructor } from './instructor.entity';
@@ -48,15 +48,18 @@ export class Course extends BaseEntity {
   @Column({ default: 0 })
   module_count: number;
 
+  @Column({ default: 0 })
+  instructor_count: number;
+
   @ManyToOne(() => Training)
   @JoinColumn()
   training: Training;
 
   @ManyToMany(() => Instructor, instructor => instructor.courses)
-  @JoinColumn()
+  @JoinTable()
   instructors: Instructor[];
 
-  @OneToMany(() => Review, review => review.course, { eager: true })
+  @OneToMany(() => Review, review => review.course)
   @JoinColumn()
   reviews: Review[];
 

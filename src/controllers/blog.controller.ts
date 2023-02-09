@@ -47,6 +47,8 @@ export class BlogController {
   }
 
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Get all blogs successfully.')
   @ApiOperation({ summary: 'Get all blog.' })
@@ -58,7 +60,22 @@ export class BlogController {
       limit: 20,
       route: 'http://localhost:3000/api/blogs',
     };
-    return this.blog.getAll(opt);
+    return this.blog.getAll();
+  }
+
+  @Get('/published')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Get all published blogs successfully.')
+  @ApiOperation({ summary: 'Get all published  blog.' })
+  @ApiOkResponse({ type: SuccessResponseDto })
+  @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
+  getAllPublishedBlog() {
+    const opt = {
+      page: 1,
+      limit: 20,
+      route: 'http://localhost:3000/api/blogs',
+    };
+    return this.blog.getAllPublished(opt);
   }
 
   @Get(':slug')

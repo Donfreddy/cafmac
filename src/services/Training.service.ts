@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateTrainingDto, UpdateTrainingDto } from '../dtos';
 import { SlugProvider } from '../providers/slug.provider';
 import { Module } from '../entities/module.entity';
+import { slugOrIdWhereCondition } from '../common/helpers';
 
 @Injectable()
 export class TrainingService {
@@ -29,7 +30,9 @@ export class TrainingService {
   }
 
   async get(trainingSlug: string): Promise<Training> {
-    const foundTraining = await this.getWhere('slug', trainingSlug);
+    const foundTraining = await this.trainingRepo.findOne({
+      where: slugOrIdWhereCondition(trainingSlug),
+    });
     if (!foundTraining) {
       throw new NotFoundException(`Training not fount with slug ${trainingSlug}`);
     }

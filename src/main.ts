@@ -7,7 +7,7 @@ import { configService } from './config/config.service';
 
 
 async function bootstrap() {
-  const url = configService.isProduction() ? 'https' : 'http'
+  // const url = configService.isProduction() ? 'https' : 'http'
 
   const app = await NestFactory.create(AppModule);
   app.enableCors();

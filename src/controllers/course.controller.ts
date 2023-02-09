@@ -56,12 +56,12 @@ export class CourseController {
   @ApiOkResponse({ type: SuccessResponseDto })
   @ApiInternalServerErrorResponse({ type: ErrorResponseDto })
   getAllCourse() {
-    const opt = {
-      page: 1,
-      limit: 20,
-      route: 'http://localhost:3000/api/courses',
-    };
-    return this.course.getAll(opt);
+    // const opt = {
+    //   page: 1,
+    //   limit: 20,
+    //   route: 'http://localhost:3000/api/courses',
+    // };
+    return this.course.getAll();
   }
 
   @Get(':slug')

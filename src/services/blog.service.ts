@@ -6,6 +6,7 @@ import { CreateBlogDto, UpdateBlogDto, UpdateCommentDto, CreateCommentDto } from
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { SlugProvider } from '../providers/slug.provider';
 import { CommentService } from './comment.service';
+import { slugOrIdWhereCondition } from '../common/helpers';
 
 @Injectable()
 export class BlogService {
@@ -30,12 +31,18 @@ export class BlogService {
       .catch((error) => Promise.reject(error));
   }
 
-  getAll(options: IPaginationOptions): Promise<Pagination<Blog>> {
-    return paginate<Blog>(this.blogRepo, options);
+  getAll(): Promise<Blog[]> {
+    return this.blogRepo.find();
+  }
+
+  getAllPublished(options: IPaginationOptions): Promise<Pagination<Blog>> {
+    return paginate<Blog>(this.blogRepo, options, { where: { is_published: true } });
   }
 
   async get(blogSlug: string): Promise<Blog> {
-    const foundBlog = await this.getWhere('slug', blogSlug);
+    const foundBlog = await this.blogRepo.findOne({
+      where: slugOrIdWhereCondition(blogSlug),
+    });
     if (!foundBlog) {
       throw new NotFoundException(`Blog not fount with slug ${blogSlug}`);
     }

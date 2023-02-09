@@ -19,7 +19,7 @@ export class CreateModuleDto {
     example: [1, 2, 3],
     required: true,
   })
-  app_domains: number[];
+  domains: number[];
 }
 
 export class UpdateModuleDto extends PartialType(CreateModuleDto) {}
